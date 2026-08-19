@@ -14,7 +14,7 @@ options:
   zrok_api: https://zrok2.home.feedbyte.io
   enable_token: ""
   share_name: ""
-  target: http://127.0.0.1:8123
+  target: http://127.0.0.1:80
 schema:
   zrok_api: url
   enable_token: password
