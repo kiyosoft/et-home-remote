@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import json
 import os
+import re
 import sys
 from typing import Any
 from urllib.parse import urlparse
@@ -75,6 +76,17 @@ def public_url(zrok_api: str, share_name: str) -> str:
     else:
         zone = host
     return f"https://{share_name}.{zone}"
+
+
+SHARE_NAME_RE = re.compile(r"home-[0-9a-f]{32}", re.IGNORECASE)
+
+
+def normalize_share_name(raw: str) -> str:
+    text = raw.strip().strip("\"'")
+    match = SHARE_NAME_RE.search(text)
+    if match:
+        return match.group(0).lower()
+    return text.lower()
 
 
 def share_token_for_name(payload: dict[str, Any], share_name: str) -> str | None:
@@ -178,7 +190,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--external-url")
     parser.add_argument("--share-token-for")
+    parser.add_argument("--normalize-share-name")
     args = parser.parse_args()
+    if args.normalize_share_name is not None:
+        print(normalize_share_name(args.normalize_share_name))
+        return EXIT_OK
     if args.share_token_for:
         data = json.load(sys.stdin)
         token = share_token_for_name(data, args.share_token_for)

@@ -5,11 +5,13 @@ export HOME=/data
 ZROK2_API_ENDPOINT="$(bashio::config 'zrok_api')"
 export ZROK2_API_ENDPOINT
 ENABLE_TOKEN="$(bashio::config 'enable_token')"
-SHARE_NAME="$(bashio::config 'share_name')"
+SHARE_NAME="$(
+  python3 /opt/et_remote_access/http_config.py --normalize-share-name "$(bashio::config 'share_name')"
+)"
 TARGET="$(bashio::config 'target')"
 
 if ! [[ "${SHARE_NAME}" =~ ^home-[0-9a-f]{32}$ ]]; then
-  bashio::exit.nok "share_name must look like home-<32 hex chars> from mint-home"
+  bashio::exit.nok "share_name must include home-<32 hex chars> from mint-home (the shareName field, not the full JSON)"
 fi
 if [[ -z "${ENABLE_TOKEN}" || "${ENABLE_TOKEN}" == "null" ]]; then
   bashio::exit.nok "enable_token is required (mint-home enableToken)"
@@ -43,6 +45,7 @@ if [[ ! -f "${HOME}/.zrok2/environment.json" ]]; then
 else
   bashio::log.info "zrok2 environment already enabled"
 fi
+zrok2 config set apiEndpoint "${ZROK2_API_ENDPOINT}"
 
 if zrok2 create name -n public "${SHARE_NAME}"; then
   bashio::log.info "Reserved name ${SHARE_NAME}"
@@ -63,30 +66,15 @@ cleanup_orphan_share() {
   fi
 }
 
-SHARE_PID=""
-shutdown() {
-  if [[ -n "${SHARE_PID}" ]] && kill -0 "${SHARE_PID}" 2>/dev/null; then
-    kill -TERM "${SHARE_PID}" 2>/dev/null || true
-    wait "${SHARE_PID}" 2>/dev/null || true
-  fi
-  exit 0
-}
-trap shutdown SIGTERM SIGINT
-
 backoff=2
 while true; do
-  bashio::log.info "Sharing ${TARGET} as public:${SHARE_NAME}"
+  cleanup_orphan_share
+  bashio::log.info "Sharing ${TARGET} as public:${SHARE_NAME} (headless)"
   set +e
-  zrok2 share public "${TARGET}" -n "public:${SHARE_NAME}" &
-  SHARE_PID=$!
-  wait "${SHARE_PID}"
+  zrok2 share public --headless "${TARGET}" -n "public:${SHARE_NAME}"
   rc=$?
-  SHARE_PID=""
   set -e
-  if [[ "${rc}" -ne 0 ]]; then
-    bashio::log.warning "Share exited ${rc}; checking for a leftover share"
-    cleanup_orphan_share
-  fi
+  bashio::log.warning "zrok2 share exited ${rc}; retrying in ${backoff}s"
   sleep "${backoff}"
   if [[ "${backoff}" -lt 60 ]]; then
     backoff=$((backoff * 2))

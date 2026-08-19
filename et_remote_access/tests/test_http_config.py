@@ -10,6 +10,7 @@ sys.path.insert(
 from http_config import (
     has_required_proxies,
     merge_http_config,
+    normalize_share_name,
     public_url,
     share_token_for_name,
 )
@@ -53,6 +54,14 @@ class HttpConfigTest(unittest.TestCase):
                 "home-9756220a791de7da38c3857591a6c608",
             ),
             "https://home-9756220a791de7da38c3857591a6c608.home.feedbyte.io",
+        )
+
+    def test_normalizes_share_name_from_url(self) -> None:
+        self.assertEqual(
+            normalize_share_name(
+                "https://home-494F53650c37fb681feb626d64313231.home.feedbyte.io"
+            ),
+            "home-494f53650c37fb681feb626d64313231",
         )
 
     def test_share_token_lookup(self) -> None:

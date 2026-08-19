@@ -7,7 +7,7 @@ configuration:
     description: enableToken from mint-home. Treated as a password.
   share_name:
     name: Share name
-    description: shareName from mint-home (home- plus 32 hex characters)
+    description: shareName from mint-home, or the home-… hostname. Example home-494f53650c37fb681feb626d64313231
   target:
     name: Local target
-    description: URL zrok2 should proxy. Inside HAOS this is usually http://homeassistant:8123
+    description: URL zrok2 should proxy. With host networking, use http://127.0.0.1:8123
