@@ -1,0 +1,13 @@
+configuration:
+  zrok_api:
+    name: zrok API
+    description: zrokApi from mint-home, for example https://zrok2.home.feedbyte.io
+  enable_token:
+    name: Enable token
+    description: enableToken from mint-home. Treated as a password.
+  share_name:
+    name: Share name
+    description: shareName from mint-home (home- plus 32 hex characters)
+  target:
+    name: Local target
+    description: URL zrok2 should proxy. Inside HAOS this is usually http://homeassistant:8123
