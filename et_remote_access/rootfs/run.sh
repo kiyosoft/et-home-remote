@@ -32,13 +32,10 @@ set +e
 python3 /opt/et_remote_access/http_config.py --external-url "${PUBLIC_URL}"
 HTTP_RC=$?
 set -e
-if [[ "${HTTP_RC}" -eq 10 ]]; then
-  bashio::log.info "Home Assistant is restarting to apply trusted proxies; waiting to be restarted"
-  exec sleep infinity
-fi
 if [[ "${HTTP_RC}" -ne 0 ]]; then
   bashio::log.warning "HTTP proxy update failed (exit ${HTTP_RC}). The public URL may return 400 until trusted proxies are set."
 fi
+bashio::log.info "Starting zrok2 share"
 
 if [[ ! -f "${HOME}/.zrok2/environment.json" ]]; then
   bashio::log.info "Enabling zrok2 environment"

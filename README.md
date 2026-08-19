@@ -6,16 +6,29 @@ It does **not** use zrok.io and does not deploy AWS. Paste the JSON fields from 
 
 ## Install
 
-1. In Home Assistant: **Settings → Add-ons → Add-on store → ⋮ → Repositories**
-2. Add this git repository URL
-3. Install **Et Remote Access**
-4. Set options from mint-home:
-   - `zrok_api` → `zrokApi`
-   - `enable_token` → `enableToken`
-   - `share_name` → `shareName`
-   - `target` → `http://homeassistant:8123` (leave this unless Core is on another port)
-5. Start the add-on. The first start may restart Home Assistant once to set trusted proxies, then start again and promote that config automatically.
-6. Open `https://<shareName>.home.feedbyte.io` from a phone off this Wi‑Fi.
+### Local (HAOS in VirtualBox)
+
+Copy the `et_remote_access` folder onto the HA host as `/addons/et_remote_access` (Samba **addons** share), then refresh the add-on store. It appears under **Local add-ons**.
+
+### From git (Add-on store)
+
+1. Push this repository somewhere Home Assistant can clone.
+2. Set `url` in `repository.yaml` to that git URL.
+3. In Home Assistant: **Settings → Add-ons → Add-on store → ⋮ → Repositories** and paste the URL.
+4. Install **Et Remote Access**.
+
+### Options
+
+From mint-home JSON:
+
+- `zrok_api` → `zrokApi`
+- `enable_token` → `enableToken`
+- `share_name` → `shareName`
+- `target` → `http://homeassistant:8123` (leave this unless Core is on another port)
+
+Start the add-on. Check the log for `Sharing http://homeassistant:8123`. If you only see HTTP proxy messages and then nothing, rebuild/restart the add-on after pulling this `run.sh` fix (do not leave it stuck waiting).
+
+Open `https://<shareName>.home.feedbyte.io` from a phone off this Wi‑Fi.
 
 ## Outbound access
 

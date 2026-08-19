@@ -2,7 +2,6 @@ name: Et Remote Access
 version: "0.1.0"
 slug: et_remote_access
 description: Share this Home Assistant through a self-hosted zrok2 overlay (Nabu Casa-style URL).
-url: https://github.com/etremote/et-remote-access
 arch:
   - amd64
   - aarch64

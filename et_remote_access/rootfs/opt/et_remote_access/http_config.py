@@ -149,22 +149,29 @@ async def apply(external_url: str | None) -> int:
         stable = http_state.get("stable")
 
         if pending and has_required_proxies(pending) and not pending.get("error"):
-            await core.call({"type": "http/config/promote"})
-            print("promoted pending HTTP config")
-            stable = pending
-
-        if not has_required_proxies(stable):
+            print("pending HTTP config already has trusted proxies")
+        elif not has_required_proxies(stable):
             merged = merge_http_config(stable)
             result = await core.call({"type": "http/config/configure", "config": merged})
             print("submitted HTTP trusted-proxy config")
             if result.get("restart"):
-                return EXIT_RESTARTING
+                print("waiting for Home Assistant to finish restarting")
+                await asyncio.sleep(20)
 
+    await _promote_and_set_url(token, external_url)
+    return EXIT_OK
+
+
+async def _promote_and_set_url(token: str, external_url: str | None) -> None:
+    async with CoreWs(token) as core:
+        http_state = await core.call({"type": "http/config"})
+        pending = http_state.get("pending")
+        if pending and has_required_proxies(pending) and not pending.get("error"):
+            await core.call({"type": "http/config/promote"})
+            print("promoted pending HTTP config")
         if external_url:
             await core.call({"type": "config/core/update", "external_url": external_url})
             print(f"set external_url to {external_url}")
-
-    return EXIT_OK
 
 
 def main() -> int:
